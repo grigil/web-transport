@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<head>
+<link href="static/css/main.css" rel="stylesheet">
+<script
+  src="https://code.jquery.com/jquery-3.5.1.min.js"
+  integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+  crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="http://malsup.github.com/jquery.form.js"></script>
+</head>
+<body class="avram">
+<div class="container">
+  <hr>
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+    {% for message in messages %}
+      <li>{{ message }} </li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  {% endwith %}
+</hr>
+  <div class="grid">
+    <div class="left-corner">
+      <div class="menu">
+
+        {% for parent_action in menu %}
+          {% if parent_action.html_class %}
+          <div class="{{parent_action.html_class}} {{parent_action.main_class}} {{parent_action.unique_class}}" onclick="{{parent_action.onclick}}">
+            <span class="choice11"></span>
+            <div class="sect1">
+              <a class="per1">{{parent_action.text}}</a>
+            </div>
+          </div>
+          {% endif %}
+          {% if parent_action.children %}
+          {% for action in parent_action.children %}
+            {% if action.child_name %}
+            <div class="{{action.child_name}} {{action.child_action_class}} {{action.unique_class}}"  onclick="{{action.onclick}}">
+              <span class="choice11"></span>
+              <div class="sect1">
+                <a class="per1">{{action.text}}</a>
+              </div>
+            </div>
+            {% endif %}
+          {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </div>
+  </div>
+  <div class="right-corner">
+    <div class="menu1">
+      <div id="place_for_table"></div>
+  </div>
+  </div>
+  </div>
+  </div>
+
+</body>
+
+<script>
+{% for parent_action in menu %}
+  {% if parent_action.html_class %}
+    $(function() {
+      $('.{{parent_action.html_class}}').click(function() {
+        $('.{{parent_action.child_name}}').slideToggle();
+        if ($('.{{parent_action.html_class}}').css('background') == 'rgba(0, 0, 0, 0.05) none repeat scroll 0% 0% / auto padding-box border-box'){
+          $('.{{parent_action.html_class}}').css({'background':''});
+        } else{
+        $('.{{parent_action.html_class}}').css({'background':'rgba(0,0,0,0.05)'});
+      }
+      });
+    });
+  {% endif %}
+{% endfor %}
+</script>
+
+<script>//Таблица + форма
+{% for parent_action in menu %}
+  {% if parent_action.html_class %}
+    {% for action in parent_action.children_actions() %}
+    $(function {{action.unique_class}}() {
+      $('.{{action.unique_class}}').click(function() {
+        $.ajax({    //Получение таблицы
+          url: '/table',
+          type: 'get',
+          data: {dbname: '{{action.unique_class}}'},
+          success: function(response) {  //Установка таблицы
+            $('#place_for_table').html(response);
+            // $.ajax({        //Получение формы
+            //   url: '/table-edit-form',
+            //   type: 'get',
+            //   data: {dbname: '{{action.unique_class}}'},
+              //success: function(response) {
+                //$('#place_for_edit_form').html(response);   //Устанавливаем форму
+//
+                //$('#addForm').ajaxForm(function() {   //Для установленной формы ставим на submit(условный) подгрузку таблицы
+                  //var $dbname = document.getElementById("addForm").getAttribute("name");
+                  //$.ajax({
+                    //url : '/table',
+                    //type: 'get',
+                    //data: {dbname: $dbname},
+                    //success : function (response) {   //Сама подгрузка таблицы
+                        //$('#place_for_table').html(response);
+                    //},
+                    //error: function(xhr) {
+                      ////Grisha do something
+                    //}
+                  //})
+                //});
+
+              //},
+              // error: function(xhr) {
+              //   //Grisha do something
+              // }
+            // })
+          },
+          error: function(xhr) {
+            //Grisha do something
+          }
+        });
+      });
+    });
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+</script>
+
+<script>
+function save(){
+a=fdd2.value+"@"+document.getElementById('products_select').options[document.getElementById('products_select').selectedIndex].text+"@"+fdd4.value
+$.ajax({
+          url: '/table-add',
+          type: 'get',
+          data: {dbname: 'products', text_element:a},
+          success: function(r){$.ajax({
+          url: '/table',
+          type: 'get',
+          data: {dbname: 'products'},
+        success: function(response) {
+            $('#place_for_table').html(response);
+          }})},
+          error: function(xhr) {
+            //Grisha do something
+          }
+        });
+        $("#popup1").hide();
+      };
+</script>
+</html>
